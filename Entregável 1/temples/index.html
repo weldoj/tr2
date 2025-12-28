@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard LoRa</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
+        h1 { margin-top: 20px; }
+        canvas { background: #222; margin-top: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>📡 Dashboard LoRa - Temperatura e Umidade</h1>
+    <canvas id="grafico" width="600" height="300"></canvas>
+
+    <script>
+        const ctx = document.getElementById('grafico').getContext('2d');
+        const grafico = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Temperatura (°C)', borderColor: 'orange', data: [], tension: 0.3 },
+                    { label: 'Umidade (%)', borderColor: 'aqua', data: [], tension: 0.3 }
+                ]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        async function atualizarGrafico() {
+            const resp = await fetch('/api/leituras');
+            const dados = await resp.json();
+
+            grafico.data.labels = dados.map(d => d.timestamp);
+            grafico.data.datasets[0].data = dados.map(d => d.temperatura);
+            grafico.data.datasets[1].data = dados.map(d => d.umidade);
+            grafico.update();
+        }
+
+        setInterval(atualizarGrafico, 2000);
+    </script>
+</body>
+</html>
